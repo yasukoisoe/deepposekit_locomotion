@@ -1,0 +1,8 @@
+,name,parent,swap
+0,head,NaN,NaN
+1,eyeL,head,eyeR
+2,eyeR,head,eyeL
+3,center,head,NaN
+4,tail_0,center,NaN
+5,tail_1,tail_0,NaN
+6,tail_2,tail_1,NaN

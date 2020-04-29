@@ -1,0 +1,2 @@
+#!/bin/bash
+find /n/boslfs/LABS/engert_lab/Yasuko/medaka_movies -name "*.avi" -exec sbatch ~/fishman_lab/atlas_registration/apply_model_fish.slurm ~/fishman_lab/atlas_registration/apply_model_fish.py {} \;
