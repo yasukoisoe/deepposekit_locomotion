@@ -27,8 +27,10 @@ from os.path import expanduser
 
 def convert_resize(root_path, filepath):
 
+    print("Let's start!")
     path = os.path.join(root_path, '%s_fish_roi.avi' % filepath)
     cap = cv2.VideoCapture(path)
+    print("yeah, change the size of the movie")
 
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     path2 = os.path.join(root_path, '%s_fish_roi_resized.avi' % filepath)
@@ -44,6 +46,7 @@ def convert_resize(root_path, filepath):
 
     cap.release()
     out.release()
+    print("Done done!")
     cv2.destroyAllWindows()
 
 
@@ -78,9 +81,6 @@ def initialize_annotation(root_path, filepath):
     # plt.savefig(path3)
     # plt.show()
 
-
-
-def predict_new_data(root_path, filepath):
     path = os.path.join(root_path, 'my_best_model.h5')
     model = load_model(path)
 
@@ -219,8 +219,8 @@ if __name__ == '__main__':
         print("Stack already converted. Skipping.")
         sys.exit()
 
-    # print("Resizing", filepath)
+    print("Resizing", filepath)
     convert_resize(root_path=root_path, filepath=movie_name)
     initialize_annotation(root_path=root_path, filepath=movie_name)
-    predict_new_data(root_path=root_path, filepath=movie_name)
+
 
