@@ -219,8 +219,8 @@ if __name__ == '__main__':
         print("Stack already converted. Skipping.")
         sys.exit()
 
-    print("Resizing", filepath)
-    convert_resize(root_path=root_path, filepath=filepath)
-    initialize_annotation(root_path=root_path, filepath=filepath)
-    predict_new_data(root_path=root_path, filepath=filepath)
+    # print("Resizing", filepath)
+    convert_resize(root_path=root_path, filepath=movie_name)
+    initialize_annotation(root_path=root_path, filepath=movie_name)
+    predict_new_data(root_path=root_path, filepath=movie_name)
 
