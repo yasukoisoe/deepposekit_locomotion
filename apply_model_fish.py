@@ -26,10 +26,10 @@ from scipy.signal import find_peaks
 from os.path import expanduser
 
 def convert_resize(root_path, filepath):
-    cap = cv2.VideoCapture(r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/%s_fish_roi.avi' % filepath)
+    cap = cv2.VideoCapture(root_path + '%s_fish_roi.avi' % filepath)
 
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter('%s_fish_roi_resized.avi' % filepath, fourcc, 5, (96, 96))
+    out = cv2.VideoWriter(root_path + '%s_fish_roi_resized.avi' % filepath, fourcc, 5, (96, 96))
 
     while True:
         ret, frame = cap.read()
@@ -46,9 +46,9 @@ def convert_resize(root_path, filepath):
 
 def initialize_annotation(root_path, filepath):
 
-    model = load_model(r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/my_best_model.h5')
+    model = load_model(root_path + 'my_best_model.h5')
 
-    data_generator = DataGenerator(r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/example_annotation_set.h5', mode='unannotated')
+    data_generator = DataGenerator(root_path + 'example_annotation_set.h5', mode='unannotated')
     image_generator = ImageGenerator(data_generator)
 
     predictions = model.predict(image_generator, verbose=1)
@@ -71,32 +71,33 @@ def initialize_annotation(root_path, filepath):
                 'r-'
             )
     plt.scatter(keypoints[0, :, 0], keypoints[0, :, 1], c=np.arange(data_generator.keypoints_shape[0]), s=50, cmap=plt.cm.hsv, zorder=3)
-    plt.savefig("figure6.png")
+    plt.savefig("figure6_%s.png" % filepath)
     plt.show()
 
 
 
 def predict_new_data(root_path, filepath):
 
-    model = load_model(r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/my_best_model.h5')
-    reader = VideoReader(r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/%s_fish_roi_resized.avi' % filepath, batch_size=10, gray=True)
+    model = load_model(root_path + 'my_best_model.h5')
+    reader = VideoReader(root_path + '%s_fish_roi_resized.avi' % filepath, batch_size=10, gray=True)
     frames = reader[0]
     print(frames.shape)
     reader.close()
+    fish_name = filepath
 
     plt.imshow(frames[0,...,0], cmap='gray')
-    plt.savefig('figure_15.png')
+    plt.savefig('figure_15_%s.png' % filepath)
     plt.show()
 
-    reader = VideoReader(r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/fish_roi_resized.avi', batch_size=50, gray=True)
+    reader = VideoReader(root_path + '%s_fish_roi_resized.avi' % filepath, batch_size=50, gray=True)
     predictions = model.predict(reader, verbose=1)
     reader.close()
 
-    np.save(r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/predictions_%s.npy' % fish_name, predictions)
+    np.save(root_path + 'predictions_%s.npy' % fish_name, predictions)
 
     x, y, confidence = np.split(predictions, 3, -1)
 
-    data_generator = DataGenerator(r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/my_annotation_set.h5')
+    data_generator = DataGenerator(root_path + 'example_annotation_set.h5')
 
     image = frames[0]
     keypoints = predictions[0]
@@ -120,45 +121,18 @@ def predict_new_data(root_path, filepath):
 
     confidence_diff = np.abs(np.diff(confidence.mean(-1).mean(-1)))
 
-    plt.figure(figsize=(15, 3))
-    plt.plot(confidence_diff)
-    plt.savefig("figure8.png")
-
-    plt.show()
-
     confidence_outlier_peaks = find_peaks(confidence_diff, height=0.1)[0]
-
-    plt.figure(figsize=(15, 3))
-    plt.plot(confidence_diff)
-    plt.plot(confidence_outlier_peaks, confidence_diff[confidence_outlier_peaks], 'ro')
-    plt.savefig("figure9.png")
-
-    plt.show()
 
     time_diff = np.diff(predictions[..., :2], axis=0)
     time_diff = np.abs(time_diff.reshape(time_diff.shape[0], -1))
     time_diff = time_diff.mean(-1)
-    print(time_diff.shape)
-
-    plt.figure(figsize=(15, 3))
-    plt.plot(time_diff)
-    plt.savefig("figure10.png")
-
-    plt.show()
 
     time_diff_outlier_peaks = find_peaks(time_diff, height=10)[0]
-
-    plt.figure(figsize=(15, 3))
-    plt.plot(time_diff)
-    plt.plot(time_diff_outlier_peaks, time_diff[time_diff_outlier_peaks], 'ro')
-    plt.savefig("figure11.png")
-
-    plt.show()
 
     outlier_index = np.concatenate((confidence_outlier_peaks, time_diff_outlier_peaks))
     outlier_index = np.unique(outlier_index) # make sure there are no repeats
 
-    reader = VideoReader(r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/fish_roi_resized.avi', batch_size=1, gray=True)
+    reader = VideoReader(root_path + '%s_fish_roi_resized.avi' % filepath, batch_size=1, gray=True)
 
     outlier_images = []
     outlier_keypoints = []
@@ -171,9 +145,7 @@ def predict_new_data(root_path, filepath):
 
     reader.close()
 
-    print(outlier_images.shape, outlier_keypoints.shape)
-
-    data_generator = DataGenerator(r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/my_annotation_set.h5')
+    data_generator = DataGenerator(root_path + 'example_annotation_set.h5')
 
     for idx in range(5):
         image = outlier_images[idx]
@@ -193,18 +165,18 @@ def predict_new_data(root_path, filepath):
         plt.scatter(keypoints[:, 0], keypoints[:, 1],
                     c=np.arange(data_generator.keypoints_shape[0]),
                     s=50, cmap=plt.cm.hsv, zorder=3)
-        plt.savefig('figure_12_%s.png' % idx)
+        plt.savefig('figure_12_%s_%s.png' % (idx, filepath))
         plt.show()
 
     merge_new_images(
-        datapath=r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/my_annotation_set.h5',
-        merged_datapath=r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/annotation_data_release_merged.h5',
+        datapath=root_path + 'my_annotation_set.h5',
+        merged_datapath=root_path + 'annotation_data_release_merged_%s.h5' % filepath,
         images=outlier_images,
         keypoints=outlier_keypoints,
         # overwrite=True # This overwrites the merged dataset if it already exists
     )
 
-    merged_generator = DataGenerator(r'/Users/yasukoisoe/fishfishfish/deepposekit_locomotion/annotation_data_release_merged.h5', mode="unannotated")
+    merged_generator = DataGenerator(root_path + 'annotation_data_release_merged_%s.h5' % filepath, mode="unannotated")
 
     image, keypoints = merged_generator[0]
 
@@ -241,6 +213,7 @@ if __name__ == '__main__':
         sys.exit()
 
     print("Resizing", filepath)
-    convert_resize(root_path, filepath)
-    initialize_annotation(root_path, filepath)
+    convert_resize(root_path=movie_path, filepath=filepath)
+    initialize_annotation(root_path=movie_path, filepath=filepath)
+    predict_new_data(root_path=movie_path, filepath=filepath)
 
