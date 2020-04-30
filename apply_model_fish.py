@@ -26,10 +26,13 @@ from scipy.signal import find_peaks
 from os.path import expanduser
 
 def convert_resize(root_path, filepath):
-    cap = cv2.VideoCapture(root_path + '%s_fish_roi.avi' % filepath)
+
+    path = os.path.join(root_path, '%s_fish_roi.avi' % filepath)
+    cap = cv2.VideoCapture(path)
 
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter(root_path + '%s_fish_roi_resized.avi' % filepath, fourcc, 5, (96, 96))
+    path2 = os.path.join(root_path, '%s_fish_roi_resized.avi' % filepath)
+    out = cv2.VideoWriter(path2, fourcc, 5, (96, 96))
 
     while True:
         ret, frame = cap.read()
@@ -45,10 +48,10 @@ def convert_resize(root_path, filepath):
 
 
 def initialize_annotation(root_path, filepath):
-
-    model = load_model(root_path + 'my_best_model.h5')
-
-    data_generator = DataGenerator(root_path + 'example_annotation_set.h5', mode='unannotated')
+    path = os.path.join(root_path, 'my_best_model.h5')
+    model = load_model(path)
+    path2 = os.path.join(root_path, 'example_annotation_set.h5')
+    data_generator = DataGenerator(path2, mode='unannotated')
     image_generator = ImageGenerator(data_generator)
 
     predictions = model.predict(image_generator, verbose=1)
@@ -59,45 +62,49 @@ def initialize_annotation(root_path, filepath):
 
     image, keypoints = data_generator[0]
 
-    plt.figure(figsize=(5,5))
-    image = image[0] if image.shape[-1] is 3 else image[0, ..., 0]
-    cmap = None if image.shape[-1] is 3 else 'gray'
-    plt.imshow(image, cmap=cmap, interpolation='none')
-    for idx, jdx in enumerate(data_generator.graph):
-        if jdx > -1:
-            plt.plot(
-                [keypoints[0, idx, 0], keypoints[0, jdx, 0]],
-                [keypoints[0, idx, 1], keypoints[0, jdx, 1]],
-                'r-'
-            )
-    plt.scatter(keypoints[0, :, 0], keypoints[0, :, 1], c=np.arange(data_generator.keypoints_shape[0]), s=50, cmap=plt.cm.hsv, zorder=3)
-    plt.savefig("figure6_%s.png" % filepath)
-    plt.show()
+    # plt.figure(figsize=(5,5))
+    # image = image[0] if image.shape[-1] is 3 else image[0, ..., 0]
+    # cmap = None if image.shape[-1] is 3 else 'gray'
+    # plt.imshow(image, cmap=cmap, interpolation='none')
+    # for idx, jdx in enumerate(data_generator.graph):
+    #     if jdx > -1:
+    #         plt.plot(
+    #             [keypoints[0, idx, 0], keypoints[0, jdx, 0]],
+    #             [keypoints[0, idx, 1], keypoints[0, jdx, 1]],
+    #             'r-'
+    #         )
+    # plt.scatter(keypoints[0, :, 0], keypoints[0, :, 1], c=np.arange(data_generator.keypoints_shape[0]), s=50, cmap=plt.cm.hsv, zorder=3)
+    # path3 = os.path.join(root_path, "figure6_%s.png" % filepath)
+    # plt.savefig(path3)
+    # plt.show()
 
 
 
 def predict_new_data(root_path, filepath):
+    path = os.path.join(root_path, 'my_best_model.h5')
+    model = load_model(path)
 
-    model = load_model(root_path + 'my_best_model.h5')
-    reader = VideoReader(root_path + '%s_fish_roi_resized.avi' % filepath, batch_size=10, gray=True)
+    path2 = os.path.join(root_path, '%s_fish_roi_resized.avi' % filepath)
+    reader = VideoReader(path2, batch_size=10, gray=True)
     frames = reader[0]
     print(frames.shape)
     reader.close()
     fish_name = filepath
 
-    plt.imshow(frames[0,...,0], cmap='gray')
-    plt.savefig('figure_15_%s.png' % filepath)
-    plt.show()
+    # plt.imshow(frames[0,...,0], cmap='gray')
+    # plt.savefig('figure_15_%s.png' % filepath)
+    # plt.show()
 
-    reader = VideoReader(root_path + '%s_fish_roi_resized.avi' % filepath, batch_size=50, gray=True)
+    reader = VideoReader(path2, batch_size=50, gray=True)
     predictions = model.predict(reader, verbose=1)
     reader.close()
 
-    np.save(root_path + 'predictions_%s.npy' % fish_name, predictions)
+    path3 = os.path.join(root_path, filepath)
+    np.save(path3 + '_predictions.npy', predictions)
 
     x, y, confidence = np.split(predictions, 3, -1)
-
-    data_generator = DataGenerator(root_path + 'example_annotation_set.h5')
+    path4 = os.path.join(root_path, 'example_annotation_set.h5')
+    data_generator = DataGenerator(path4)
 
     image = frames[0]
     keypoints = predictions[0]
@@ -116,8 +123,8 @@ def predict_new_data(root_path, filepath):
     plt.scatter(keypoints[:, 0], keypoints[:, 1],
                 c=np.arange(data_generator.keypoints_shape[0]),
                 s=50, cmap=plt.cm.hsv, zorder=3)
-    plt.savefig("figure7.png")
-    plt.show()
+    plt.savefig(path3 + "_figure7.png")
+    # plt.show()
 
     confidence_diff = np.abs(np.diff(confidence.mean(-1).mean(-1)))
 
@@ -132,7 +139,7 @@ def predict_new_data(root_path, filepath):
     outlier_index = np.concatenate((confidence_outlier_peaks, time_diff_outlier_peaks))
     outlier_index = np.unique(outlier_index) # make sure there are no repeats
 
-    reader = VideoReader(root_path + '%s_fish_roi_resized.avi' % filepath, batch_size=1, gray=True)
+    reader = VideoReader(path2, batch_size=1, gray=True)
 
     outlier_images = []
     outlier_keypoints = []
@@ -145,7 +152,7 @@ def predict_new_data(root_path, filepath):
 
     reader.close()
 
-    data_generator = DataGenerator(root_path + 'example_annotation_set.h5')
+    data_generator = DataGenerator(path4)
 
     for idx in range(5):
         image = outlier_images[idx]
@@ -165,18 +172,18 @@ def predict_new_data(root_path, filepath):
         plt.scatter(keypoints[:, 0], keypoints[:, 1],
                     c=np.arange(data_generator.keypoints_shape[0]),
                     s=50, cmap=plt.cm.hsv, zorder=3)
-        plt.savefig('figure_12_%s_%s.png' % (idx, filepath))
+        plt.savefig(path3 + '_figure_12_%s.png' % filepath)
         plt.show()
 
     merge_new_images(
-        datapath=root_path + 'my_annotation_set.h5',
-        merged_datapath=root_path + 'annotation_data_release_merged_%s.h5' % filepath,
+        datapath=path4,
+        merged_datapath=path3 + '_annotation_data_release_merged.h5',
         images=outlier_images,
         keypoints=outlier_keypoints,
         # overwrite=True # This overwrites the merged dataset if it already exists
     )
 
-    merged_generator = DataGenerator(root_path + 'annotation_data_release_merged_%s.h5' % filepath, mode="unannotated")
+    merged_generator = DataGenerator(path3 + '_annotation_data_release_merged.h5', mode="unannotated")
 
     image, keypoints = merged_generator[0]
 
@@ -192,11 +199,11 @@ def predict_new_data(root_path, filepath):
                 'r-'
             )
     plt.scatter(keypoints[0, :, 0], keypoints[0, :, 1], c=np.arange(data_generator.keypoints_shape[0]), s=50, cmap=plt.cm.hsv, zorder=3)
-    plt.savefig('figure_13.png')
+    plt.savefig(path3 + '_figure_13.png')
     plt.show()
 
     plt.imshow(frame[...,::-1])
-    plt.savefig('figure_14.png')
+    plt.savefig(path3 + '_figure_14.png')
 
     plt.show()
 
@@ -213,7 +220,7 @@ if __name__ == '__main__':
         sys.exit()
 
     print("Resizing", filepath)
-    convert_resize(root_path=movie_path, filepath=filepath)
-    initialize_annotation(root_path=movie_path, filepath=filepath)
-    predict_new_data(root_path=movie_path, filepath=filepath)
+    convert_resize(root_path=root_path, filepath=filepath)
+    initialize_annotation(root_path=root_path, filepath=filepath)
+    predict_new_data(root_path=root_path, filepath=filepath)
 
