@@ -215,11 +215,11 @@ if __name__ == '__main__':
     root_path = filepath.parent
     movie_name = filepath.stem
 
-    if (root_path / f"{movie_name}_fish_roi.avi").exists():
+    if (root_path / f"{movie_name}_fish_roi_resized.avi").exists():
         print("Stack already converted. Skipping.")
         sys.exit()
 
-    print("Resizing", filepath)
+    print("Resizing", movie_name)
     convert_resize(root_path=root_path, filepath=movie_name)
     initialize_annotation(root_path=root_path, filepath=movie_name)
 
