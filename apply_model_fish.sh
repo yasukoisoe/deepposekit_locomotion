@@ -1,2 +1,2 @@
 #!/bin/bash
-find /n/boslfs/LABS/engert_lab/Yasuko/medaka_movies -name "*_fish_roi.avi" -exec sbatch ~/medaka_locomotion/deepposekit_locomotion/apply_model_fish.slurm ~/medaka_locomotion/deepposekit_locomotion/apply_model_fish.py {} \;
+find /n/boslfs/LABS/engert_lab/Yasuko/medaka_movies -name "*_fish_roi_revised.avi" -exec sbatch ~/medaka_locomotion/deepposekit_locomotion/apply_model_fish.slurm ~/medaka_locomotion/deepposekit_locomotion/apply_model_fish.py {} \;

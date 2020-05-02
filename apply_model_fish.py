@@ -1,10 +1,5 @@
 from pathlib import Path
 import os
-import numpy as np
-import cv2
-import xml.etree.ElementTree as ET
-import datetime
-import subprocess
 import sys
 
 import numpy as np
@@ -42,12 +37,13 @@ def convert_resize(root_path, filepath):
             b = cv2.resize(frame, (96, 96), fx=0, fy=0, interpolation=cv2.INTER_CUBIC)
             out.write(b)
         else:
+            print("oh no")
             break
 
     cap.release()
     out.release()
-    print("Done done!")
     cv2.destroyAllWindows()
+    print("Done done!")
 
 
 def initialize_annotation(root_path, filepath):
@@ -213,14 +209,14 @@ if __name__ == '__main__':
     # this comes from the command line
     filepath = Path(sys.argv[1]).resolve()
     root_path = filepath.parent
-    movie_name = filepath.stem
+    movie_name = filepath.stem[-21]
+    print(movie_name)
 
-    if (root_path / f"{movie_name}_fish_roi_resized.avi").exists():
-        print("Stack already converted. Skipping.")
-        sys.exit()
+    # if (root_path / f"{movie_name}_fish_roi_resized.avi").exists():
+    #     #     print("Stack already converted. Skipping.")
+    #     #     sys.exit()
 
-    print("Resizing", movie_name)
-    convert_resize(root_path=root_path, filepath=movie_name)
+    # convert_resize(root_path=root_path, filepath=movie_name)
     initialize_annotation(root_path=root_path, filepath=movie_name)
 
 
