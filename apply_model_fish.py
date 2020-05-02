@@ -212,9 +212,9 @@ if __name__ == '__main__':
     movie_name = filepath.stem[-21]
     print(movie_name)
 
-    # if (root_path / f"{movie_name}_fish_roi_resized.avi").exists():
-    #     #     print("Stack already converted. Skipping.")
-    #     #     sys.exit()
+    if (root_path / f"{movie_name}_predictions.npy").exists():
+        print("prediction already converted. Skipping.")
+        sys.exit()
 
     # convert_resize(root_path=root_path, filepath=movie_name)
     initialize_annotation(root_path=root_path, filepath=movie_name)
