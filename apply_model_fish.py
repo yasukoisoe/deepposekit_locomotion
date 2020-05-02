@@ -209,7 +209,7 @@ if __name__ == '__main__':
     # this comes from the command line
     filepath = Path(sys.argv[1]).resolve()
     root_path = filepath.parent
-    movie_name = filepath.stem[-21]
+    movie_name = filepath.stem[:-17]
     print(movie_name)
 
     if (root_path / f"{movie_name}_predictions.npy").exists():
